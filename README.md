@@ -60,9 +60,9 @@ Audit data will be saved to the same persistance store as your DB context uses. 
 | Field         | Type     | Description                                                                                                                        |
 | ------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Id            | Guid     | Primary Key                                                                                                                        |
-| RowId         | Json     | Contains Json representing the primary key of the changed record.                                                                  |
+| RowId         | Json     | Contains Jsonb representing the primary key of the changed record.                                                                  |
 | TableName     | String   | The name of the table which the affected record resides                                                                            |
-| Data          | Json     | Json detailing the information that has changed. This will in the format `{ FieldName: { OldValue: 'Value', NewValue: 'Value' } }` |
+| Data          | Json     | Jsonb detailing the information that has changed. This will in the format `{ FieldName: { OldValue: 'Value', NewValue: 'Value' } }` |
 | Action        | String   | The action performed on the record, this will be one of Added, Updated, Deleted                                                    |
 | CreateDate    | DateTime | DateTime stamp of when the audit record was created. Note, this can optionally be overridden in the AuditOptions configuration.    |
 | CreatedBy     | String   | Who performed the change resulting in the audit being written                                                                      |

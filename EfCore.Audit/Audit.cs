@@ -14,7 +14,7 @@ namespace EfCore.Audit
         /// <summary>
         ///     The source row id saved as Json
         /// </summary>
-        [Column(TypeName = "json")]
+        [Column(TypeName = "jsonb")]
         public string RowId { get; set; }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace EfCore.Audit
         /// <summary>
         ///     Json containing information about the changes applied to the table record
         /// </summary>
-        [Column(TypeName = "json")]
+        [Column(TypeName = "jsonb")]
         public string Data { get; set; }
 
         /// <summary>
