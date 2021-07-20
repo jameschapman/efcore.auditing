@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using EfCore.Audit.Party.Domain;
 using EfCore.Audit.UnitTests.Models;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shouldly;
@@ -30,24 +31,19 @@ namespace EfCore.Audit.UnitTests
             var birthday = new ImportantDate {Description = "Birthday", Date = new DateTime(2000, 1, 1)};
             var person = new Person {Name = "John", ImportantDates = new List<ImportantDate> {birthday}};
 
-            // ACT
-            var success = false;
+            var postSaveAction = new Mock<IPostSaveAction<ApplicationContext>>();
+            
+                // ACT
+                var success = false;
             await DatabaseFixture.ExecuteTest(async (context, time) =>
             {
                 context.People.Add(person);
 
-                await context.SaveChangesAsyncWithHistory((c, list) =>
-                {
-                    c.ShouldBe(context);
-
-                    list.Count.ShouldBe(2);
-
-                    success = true;
-                });
-            });
+                await context.SaveChangesAsyncWithHistory();
+            }, (provider) => postSaveAction.Object);
 
             // ASSERT
-            success.ShouldBe(true);
+            postSaveAction.Verify(x => x.Handle(It.IsAny<ApplicationContext>(), It.Is<IList<Audit>>((o) => o.Count == 2)));
         }
 
 
@@ -57,7 +53,8 @@ namespace EfCore.Audit.UnitTests
             // ARRANGE
             var birthday = new ImportantDate {Description = "Birthday", Date = new DateTime(2000, 1, 1)};
             var person = new Person {Name = "John", ImportantDates = new List<ImportantDate> {birthday}};
-
+            var postSaveAction = new Mock<IPostSaveAction<ApplicationContext>>();
+            
             await DatabaseFixture.ExecuteTest(async (context, options) =>
             {
                 context.People.Add(person);
@@ -100,7 +97,7 @@ namespace EfCore.Audit.UnitTests
 
                 key = JObject.Parse(auditItem["ImportantDates"].RowId);
                 Guid.Parse(key["id"].ToString()).ShouldNotBe(Guid.Empty);
-            });
+            }, provider => postSaveAction.Object);
         }
 
 
@@ -130,7 +127,7 @@ namespace EfCore.Audit.UnitTests
 
                 var key = JObject.Parse(auditItem.RowId);
                 Guid.Parse(key["id"].ToString()).ShouldNotBe(Guid.Empty);
-            });
+            }, null);
         }
 
         [Fact]
@@ -150,7 +147,7 @@ namespace EfCore.Audit.UnitTests
                 var testItem = await context.Set<Person>().FirstAsync();
 
                 testItem.Name.ShouldBe("John");
-            });
+            }, null);
         }
 
         [Fact]
@@ -175,7 +172,7 @@ namespace EfCore.Audit.UnitTests
                 var changes = JsonConvert.DeserializeObject<Dictionary<string, AuditEntry.Change>>(auditItem.Data);
                 changes["name"].NewValue.ShouldBe("James");
                 changes["name"].OldValue.ShouldBe("John");
-            });
+            }, null);
         }
 
         [Fact]
@@ -197,7 +194,7 @@ namespace EfCore.Audit.UnitTests
 
                 auditItem["People"].TransactionId.ShouldBe(options.TransactionId());
                 auditItem["ImportantDates"].TransactionId.ShouldBe(options.TransactionId());
-            });
+            }, null);
         }
 
         /// <summary>

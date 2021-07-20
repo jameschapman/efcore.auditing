@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Newtonsoft.Json;
+#pragma warning disable 618
 
 namespace EfCore.Audit
 {
@@ -14,7 +15,7 @@ namespace EfCore.Audit
         public static class ExtensionsMethods
         {
             public static async Task<int> SaveChangesAsyncWithHistory<TDbContext>(
-                this TDbContext context, Action<TDbContext, IList<Audit>> callback = null)
+                this TDbContext context)
                 where TDbContext : DbContext
             {
                 var options = context.GetService<AuditOptions>();
@@ -33,8 +34,18 @@ namespace EfCore.Audit
                 // Save audit
                 var auditItems = await context.OnAfterSaveChanges(changes, options);
 
-                // Execute callback
-                callback?.Invoke(context, auditItems);
+                try
+                {
+                    var postSaveAction = context.GetService<IPostSaveAction<TDbContext>>();
+                    if (postSaveAction != null)
+                    {
+                        await postSaveAction.Handle(context, auditItems);
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // GetService is the only option available via the DB Context, so we have to perform a try/catch :(
+                }
 
                 return result;
             }

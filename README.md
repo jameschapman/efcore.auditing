@@ -27,7 +27,7 @@ ServiceProvider = new ServiceCollection()
 	.RegisterEntityFrameworkAuditing(ServiceLifetime.Singleton, options => {
 		options.CurrentDateTime = () => CurrentDateTime;
 		options.TransactionId = () => // Maybe the ASP request id goes here?
-	})
+	}, provider => new PostSaveAction())
    	.BuildServiceProvider();
 ```
 
@@ -36,22 +36,15 @@ You can optionally override the default `CurrentDateTime` and `TransactionId` op
 If you do not set the CurrentDateTime value it will default to `DateTime.UtcNow.`. `TransactionId` will default to a random GUID unless overridden. Each SaveChangesAsyncWithHistory call
 will result in a new TransactionId being generated.
 
+RegisterEntityFrameworkAuditing also have the option to pass a PostSaveAction object that should inherit from IPostSaveAction<T> where T is the ApplicationContext type. This will allow you to perform additional actions post save.
+
 3. Save changes
 
 ```csharp
 await _context.SaveChangesAsyncWithHistory("Test User");
 ```
 
-```csharp
-await _context.SaveChangesAsyncWithHistory("Test User", (context, items) =>
-	{
-		// do something here
-	});
-```
-
 You can save Db Context changes via the `SaveChangesAsyncWithHistory` extension method. This method requires you to pass the name of the user you wish to associate to the change.
-Optionally, you can also defined a callback action which accepts the current db context alongside a collection of changes, this allows for additional projections of data to be
-created if required.
 
 ## Viewing Data
 

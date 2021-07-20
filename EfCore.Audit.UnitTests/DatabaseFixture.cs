@@ -7,7 +7,7 @@ namespace EfCore.Audit.UnitTests
 {
     public static class DatabaseFixture
     {
-        public static async Task ExecuteTest(Func<ApplicationContext, AuditOptions, Task> action)
+        public static async Task ExecuteTest(Func<ApplicationContext, AuditOptions, Task> action, Func<IServiceProvider, IPostSaveAction<ApplicationContext>> postSaveAction = null)
         {
             var auditOptions = new AuditOptions
             {
@@ -17,14 +17,15 @@ namespace EfCore.Audit.UnitTests
                 Client = () => "TestApp"
             };
 
+            Action<AuditOptions> configureOptions = options =>
+            {
+                options.CurrentDateTime = auditOptions.CurrentDateTime;
+                options.TransactionId = auditOptions.TransactionId;
+                options.User = auditOptions.User;
+                options.Client = auditOptions.Client;
+            };
             var serviceProvider = new ServiceCollection()
-                .RegisterEntityFrameworkAuditing(ServiceLifetime.Singleton, options =>
-                {
-                    options.CurrentDateTime = auditOptions.CurrentDateTime;
-                    options.TransactionId = auditOptions.TransactionId;
-                    options.User = auditOptions.User;
-                    options.Client = auditOptions.Client;
-                })
+                .RegisterEntityFrameworkAuditing(ServiceLifetime.Singleton, configureOptions, postSaveAction)
                 .AddDbContext<ApplicationContext>(options => { options.UseSqlite("DataSource=:memory:"); })
                 .BuildServiceProvider();
 
