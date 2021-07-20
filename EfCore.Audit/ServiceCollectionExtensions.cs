@@ -13,7 +13,7 @@ namespace EfCore.Audit
             Action<AuditOptions> configureOptions = null,
             Func<IServiceProvider, IPostSaveAction<TDbContext>> postSaveAction = null)
         {
-            return services.RegisterEntityFrameworkAuditing1(serviceLifetime, provider =>
+            return services.RegisterEntityFrameworkAuditing(serviceLifetime, provider =>
             {
                 var options = new AuditOptions();
                 configureOptions?.Invoke(options);
@@ -21,7 +21,7 @@ namespace EfCore.Audit
             }, postSaveAction);
         }
 
-        private static IServiceCollection RegisterEntityFrameworkAuditing1<TDbContext>(this IServiceCollection services,
+        public static IServiceCollection RegisterEntityFrameworkAuditing<TDbContext>(this IServiceCollection services,
             ServiceLifetime serviceLifetime,
             Func<IServiceProvider, object> factory, Func<IServiceProvider, IPostSaveAction<TDbContext>> postSaveAction)
         {
