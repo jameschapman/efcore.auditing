@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using EfCore.Audit.Party.Domain;
 using EfCore.Audit.UnitTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Moq;
