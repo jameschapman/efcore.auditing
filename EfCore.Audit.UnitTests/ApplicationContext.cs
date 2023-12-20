@@ -5,12 +5,18 @@ namespace EfCore.Audit.UnitTests
 {
     public class ApplicationContext : DbContext
     {
+        // Used by unit tests
+        public ApplicationContext()
+        {
+            
+        }
+        
         public ApplicationContext(DbContextOptions options)
             : base(options)
         {
         }
 
-        public DbSet<Person> People { get; set; }
+        public virtual DbSet<Person> People { get; set; }
 
         public DbSet<ImportantDate> ImportantDates { get; set; }
 
