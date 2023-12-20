@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Newtonsoft.Json;
 #pragma warning disable 618
 
@@ -77,7 +78,7 @@ namespace EfCore.Audit
                         continue;
                     }
 
-                    var propertyName = property.Metadata.GetColumnName();
+                    var propertyName = property.Metadata.GetColumnName(StoreObjectIdentifier.Table(entry.Metadata.GetTableName(), null));
                     if (property.Metadata.IsPrimaryKey())
                     {
                         auditEntry.KeyValues[propertyName] = property.CurrentValue;
